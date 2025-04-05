@@ -1,22 +1,16 @@
 import React from 'react';
 import styles from './Main.module.scss';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../redux/store';
+import { removeCurrency } from '../../redux/currencyReducer';
 
 const Main: React.FC = () => {
-	const rates = useSelector((state: RootState) => state.currency.rates);
-	const connected = useSelector((state: RootState) => state.currency.connected);
-
+	const dispatch = useDispatch();
+	const currencyList = useSelector(
+		(state: RootState) => state.currency.currencyList
+	);
 	return (
 		<main className={styles.main}>
-			<h2>Курсы валют {connected ? '🟢' : '🔴'}</h2>
-			<ul>
-				{Object.entries(rates).map(([currency, value]) => (
-					<li key={currency}>
-						<strong>{currency}:</strong> {value.toFixed(2)}
-					</li>
-				))}
-			</ul>
 			<div className={styles.mainHeader}>
 				<div className={styles.mainHeaderItem}>Название</div>
 				<div className={styles.mainHeaderItem}>Количество</div>
@@ -26,28 +20,41 @@ const Main: React.FC = () => {
 				<div className={styles.mainHeaderItem}>Доля в портфеле (%)</div>
 			</div>
 
-			<div className={styles.mainList}>
-				<div className={styles.mainListItem} data-label='Название'>
-					USD
-				</div>
-				<div className={styles.mainListItem} data-label='Количество'>
-					1500
-				</div>
-				<div className={styles.mainListItem} data-label='Текущая цена'>
-					$1
-				</div>
-				<div className={styles.mainListItem} data-label='Общая стоимость'>
-					$1500
-				</div>
-				<div
-					className={`${styles.mainListItem} ${styles.positive}`}
-					data-label='Изм. 24ч (%)'
-				>
-					+0.5%
-				</div>
-				<div className={styles.mainListItem} data-label='Доля в портфеле (%)'>
-					40%
-				</div>
+			<div className={styles.mainListWrapper}>
+				{currencyList.map((item, index) => (
+					<div
+						onClick={() => dispatch(removeCurrency(0))}
+						key={index}
+						className={styles.mainList}
+					>
+						<div className={styles.mainListItem} data-label='Название'>
+							{item.currency}
+						</div>
+						<div className={styles.mainListItem} data-label='Количество'>
+							{item.quantity.toFixed(5)}
+						</div>
+						<div className={styles.mainListItem} data-label='Текущая цена'>
+							${item.totalQuantity / item.quantity}
+						</div>
+						<div className={styles.mainListItem} data-label='Общая стоимость'>
+							${item.totalQuantity.toFixed(2)}
+						</div>
+						<div
+							className={`${styles.mainListItem} ${
+								item.changePrice > 0 ? styles.positive : styles.negative
+							}`}
+							data-label='Изм. 24ч (%)'
+						>
+							{item.changePrice.toFixed(2)}%
+						</div>
+						<div
+							className={styles.mainListItem}
+							data-label='Доля в портфеле (%)'
+						>
+							{item.sharePercentage.toFixed(2)}%
+						</div>
+					</div>
+				))}
 			</div>
 		</main>
 	);

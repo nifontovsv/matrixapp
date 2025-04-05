@@ -1,7 +1,5 @@
 .main {
 	padding-top: 6em;
-	overflow-y: auto;
-	max-height: 600px;
 	.mainHeader {
 		display: flex;
 		justify-content: center;
@@ -13,24 +11,27 @@
 			justify-content: center;
 		}
 	}
-	.mainList {
-		display: flex;
-		justify-content: center;
+	.mainListWrapper {
+		overflow-y: auto;
+		max-height: 600px;
 		transition: background 0.1s ease, border-radius 0.1s ease;
 
-		.mainListItem {
-			margin: 0 0.5em;
-			padding: 10px 0;
+		.mainList {
 			display: flex;
-			justify-content: center;
-			align-items: center;
-			width: 200px;
-			height: 40px;
-			cursor: pointer;
-		}
-		&:hover {
-			background: #505050;
-			border-radius: 8px;
+			.mainListItem {
+				margin: 0 0.5em;
+				padding: 10px 0;
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				width: 200px;
+				height: 40px;
+				cursor: pointer;
+			}
+			&:hover {
+				background: #505050;
+				border-radius: 8px;
+			}
 		}
 	}
 }
