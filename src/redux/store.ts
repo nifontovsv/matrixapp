@@ -1,10 +1,4 @@
-import {
-	Dispatch,
-	Middleware,
-	MiddlewareAPI,
-	UnknownAction,
-	configureStore,
-} from '@reduxjs/toolkit';
+import { Middleware, configureStore } from '@reduxjs/toolkit';
 import currencyReducer, { setConnected, setRates } from './currencyReducer';
 
 const localStorageMiddleware: Middleware = (store) => (next) => (action) => {
@@ -20,7 +14,13 @@ const localStorageMiddleware: Middleware = (store) => (next) => (action) => {
 		'currency/updateSharePercentage',
 	];
 
-	if (actionsToSave.includes(action.type)) {
+	if (
+		typeof action === 'object' &&
+		action !== null &&
+		'type' in action &&
+		typeof action.type === 'string' &&
+		actionsToSave.includes(action.type)
+	) {
 		const state = store.getState().currency;
 		try {
 			localStorage.setItem('currencyRates', JSON.stringify(state));
@@ -32,70 +32,63 @@ const localStorageMiddleware: Middleware = (store) => (next) => (action) => {
 	return result;
 };
 
-const wsMiddleware: Middleware<{}, any, Dispatch<UnknownAction>> = (
-	storeAPI: MiddlewareAPI<Dispatch<UnknownAction>, any>
-) => {
-	let socket: WebSocket | null = null;
+let socket: WebSocket | null = null;
 
-	return (next: Dispatch<UnknownAction>) => (action: UnknownAction) => {
-		if (action.type === 'START_WEBSOCKET') {
-			if (socket) socket.close();
-			socket = new WebSocket('wss://stream.binance.com:9443/stream?streams');
+const wsMiddleware: Middleware = (storeAPI) => (next) => (action) => {
+	if ((action as { type: string }).type === 'START_WEBSOCKET') {
+		if (socket) socket.close();
+		socket = new WebSocket('wss://stream.binance.com:9443/stream?streams');
 
-			socket.onopen = () => {
-				storeAPI.dispatch(setConnected(true));
-				console.log('WebSocket подключён!');
-
-				const payload = {
-					method: 'SUBSCRIBE',
-					params: [
-						'btcusdt@ticker',
-						'ethusdt@ticker',
-						'bnbusdt@ticker',
-						'xrpusdt@ticker',
-						'adausdt@ticker',
-						'solusdt@ticker',
-						'dogeusdt@ticker',
-						'dotusdt@ticker',
-						'maticusdt@ticker',
-						'ltcusdt@ticker',
-					],
-					id: 1,
-				};
-
-				socket!.send(JSON.stringify(payload));
+		socket.onopen = () => {
+			storeAPI.dispatch(setConnected(true));
+			console.log('WebSocket подключён!');
+			const payload = {
+				method: 'SUBSCRIBE',
+				params: [
+					'btcusdt@ticker',
+					'ethusdt@ticker',
+					'bnbusdt@ticker',
+					'xrpusdt@ticker',
+					'adausdt@ticker',
+					'solusdt@ticker',
+					'dogeusdt@ticker',
+					'dotusdt@ticker',
+					'maticusdt@ticker',
+					'ltcusdt@ticker',
+				],
+				id: 1,
 			};
+			socket!.send(JSON.stringify(payload));
+		};
 
-			socket.onmessage = (event) => {
-				const message = JSON.parse(event.data);
-				if (
-					message.data &&
-					message.data.s &&
-					message.data.c &&
-					message.data.o
-				) {
-					const currency = message.data.s;
-					const price = parseFloat(message.data.c);
-					const openPrice = parseFloat(message.data.o);
+		socket.onmessage = (event) => {
+			const message = JSON.parse(event.data);
+			console.log('WebSocket message:', message);
+			if (message.data?.s && message.data?.c && message.data?.o) {
+				const currency = message.data.s;
+				const price = parseFloat(message.data.c);
+				const openPrice = parseFloat(message.data.o);
 
-					storeAPI.dispatch(
-						setRates({
-							...storeAPI.getState().currency.rates,
-							[currency]: price,
-						})
-					);
-				}
-			};
+				storeAPI.dispatch(
+					setRates({
+						...storeAPI.getState().currency.rates,
+						[currency]: {
+							current: price,
+							open: openPrice,
+						},
+					})
+				);
+			}
+		};
 
-			socket.onclose = () => {
-				storeAPI.dispatch(setConnected(false));
-				console.log('WebSocket отключён! Переподключение...');
-				setTimeout(() => storeAPI.dispatch({ type: 'START_WEBSOCKET' }), 5000);
-			};
-		}
+		socket.onclose = () => {
+			storeAPI.dispatch(setConnected(false));
+			console.log('WebSocket отключён! Переподключение...');
+			setTimeout(() => storeAPI.dispatch({ type: 'START_WEBSOCKET' }), 5000);
+		};
+	}
 
-		return next(action);
-	};
+	return next(action);
 };
 
 export const store = configureStore({

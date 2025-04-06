@@ -35,7 +35,7 @@ const Modal: React.FC = () => {
 				setSelectedCurrency(null);
 				setQuery('');
 				setQuantity('');
-				setPreviousPrice(0);
+				setPreviousPrice(null);
 				dispatch(closeModal());
 			}
 		};
@@ -51,11 +51,9 @@ const Modal: React.FC = () => {
 		};
 	}, [isOpen, dispatch]);
 
-	if (!isOpen) return null;
-
 	useEffect(() => {
-		if (selectedCurrency) {
-			setPreviousPrice(rates[selectedCurrency]);
+		if (selectedCurrency && rates[selectedCurrency]) {
+			setPreviousPrice(rates[selectedCurrency].open);
 		}
 	}, [selectedCurrency, rates]);
 
@@ -66,13 +64,15 @@ const Modal: React.FC = () => {
 				addCurrency({
 					currency: selectedCurrency,
 					quantity: parseFloat(quantity),
-					previousPrice,
-					currentPrice: rates[selectedCurrency],
+					openPrice: previousPrice!,
+					currentPrice: rates[selectedCurrency].current || 0,
 				})
 			);
 			dispatch(updateSharePercentage());
 		}
 	};
+
+	if (!isOpen) return null;
 
 	return (
 		<div className={styles.modalWindow}>
@@ -96,7 +96,12 @@ const Modal: React.FC = () => {
 								key={currency}
 								className={styles.currencyListItem}
 							>
-								<strong>{currency}:</strong> <span>{value.toFixed(5)}</span>
+								<strong>{currency}:</strong>{' '}
+								<span>
+									{selectedCurrency && rates[selectedCurrency]
+										? rates[selectedCurrency].current.toFixed(5)
+										: '—'}
+								</span>
 								<span>+0.16%</span>
 							</div>
 						))
@@ -108,7 +113,7 @@ const Modal: React.FC = () => {
 					<div className={styles.addCurrencyBlock}>
 						<p className={styles.currencyInfo}>
 							<strong>{selectedCurrency}:</strong>{' '}
-							<span>{rates[selectedCurrency].toFixed(5)}</span>
+							<span>{rates[selectedCurrency]?.current.toFixed(5)}</span>
 						</p>
 						<form className={styles.currencyForm}>
 							<Input

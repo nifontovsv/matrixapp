@@ -16,20 +16,6 @@ interface CurrencyState {
 	rates: Record<string, { current: number; open: number }>;
 }
 
-const saveToLocalStorage = (state: CurrencyState) => {
-	try {
-		const serializedState = {
-			connected: state.connected,
-			isOpen: state.isOpen,
-			currencyList: state.currencyList,
-			rates: state.rates,
-		};
-		localStorage.setItem('currencyRates', JSON.stringify(serializedState));
-	} catch (error) {
-		console.error('Ошибка сохранения в localStorage', error);
-	}
-};
-
 const loadFromLocalStorage = (): CurrencyState => {
 	try {
 		const saveData = localStorage.getItem('currencyRates');
@@ -84,7 +70,7 @@ const currencySlice = createSlice({
 			}>
 		) => {
 			for (const key in action.payload) {
-				state.rates[key] = action.payload[key].current;
+				state.rates[key] = action.payload[key];
 			}
 		},
 		addCurrency: (

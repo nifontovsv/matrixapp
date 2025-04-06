@@ -23,7 +23,7 @@ const Main: React.FC = () => {
 			<div className={styles.mainListWrapper}>
 				{currencyList.map((item, index) => (
 					<div
-						onClick={() => dispatch(removeCurrency(0))}
+						onClick={() => dispatch(removeCurrency(index))}
 						key={index}
 						className={styles.mainList}
 					>
