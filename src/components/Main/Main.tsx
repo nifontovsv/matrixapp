@@ -6,9 +6,14 @@ import { removeCurrency } from '../../redux/currencyReducer';
 
 const Main: React.FC = () => {
 	const dispatch = useDispatch();
+	const rates = useSelector((state: RootState) => state.currency.rates);
 	const currencyList = useSelector(
 		(state: RootState) => state.currency.currencyList
 	);
+
+	const handleRemoveCurrency = (index: number) => {
+		dispatch(removeCurrency(index)); // Удаляем валюту по индексу
+	};
 	return (
 		<main className={styles.main}>
 			<div className={styles.mainHeader}>
@@ -21,40 +26,58 @@ const Main: React.FC = () => {
 			</div>
 
 			<div className={styles.mainListWrapper}>
-				{currencyList.map((item, index) => (
-					<div
-						onClick={() => dispatch(removeCurrency(index))}
-						key={index}
-						className={styles.mainList}
-					>
-						<div className={styles.mainListItem} data-label='Название'>
-							{item.currency}
-						</div>
-						<div className={styles.mainListItem} data-label='Количество'>
-							{item.quantity.toFixed(5)}
-						</div>
-						<div className={styles.mainListItem} data-label='Текущая цена'>
-							${item.totalQuantity / item.quantity}
-						</div>
-						<div className={styles.mainListItem} data-label='Общая стоимость'>
-							${item.totalQuantity.toFixed(2)}
-						</div>
+				{/* Маппим currencyList для отображения всех добавленных валют */}
+				{currencyList.map((currencyData, index) => {
+					const {
+						currency,
+						quantity,
+						openPrice,
+						changePrice,
+						totalQuantity,
+						sharePercentage,
+					} = currencyData;
+
+					// Получаем текущую цену из rates
+					const currentPrice = rates[currency]?.current || 0;
+
+					// Рассчитываем общую стоимость
+					const totalCost = quantity * currentPrice;
+
+					return (
 						<div
-							className={`${styles.mainListItem} ${
-								item.changePrice > 0 ? styles.positive : styles.negative
-							}`}
-							data-label='Изм. 24ч (%)'
+							onClick={() => handleRemoveCurrency(index)} // Удаляем валюту по индексу
+							key={index}
+							className={styles.mainList}
 						>
-							{item.changePrice.toFixed(2)}%
+							<div className={styles.mainListItem} data-label='Название'>
+								{currency}
+							</div>
+							<div className={styles.mainListItem} data-label='Количество'>
+								{quantity?.toFixed(5)}
+							</div>
+							<div className={styles.mainListItem} data-label='Текущая цена'>
+								${currentPrice.toFixed(5)}
+							</div>
+							<div className={styles.mainListItem} data-label='Общая стоимость'>
+								${totalCost.toFixed(2)}
+							</div>
+							<div
+								className={`${styles.mainListItem} ${
+									changePrice > 0 ? styles.positive : styles.negative
+								}`}
+								data-label='Изм. 24ч (%)'
+							>
+								{changePrice.toFixed(2)}%
+							</div>
+							<div
+								className={styles.mainListItem}
+								data-label='Доля в портфеле (%)'
+							>
+								{sharePercentage?.toFixed(2)}%
+							</div>
 						</div>
-						<div
-							className={styles.mainListItem}
-							data-label='Доля в портфеле (%)'
-						>
-							{item.sharePercentage.toFixed(2)}%
-						</div>
-					</div>
-				))}
+					);
+				})}
 			</div>
 		</main>
 	);

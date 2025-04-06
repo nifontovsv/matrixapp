@@ -17,6 +17,7 @@ const Modal: React.FC = () => {
 	const connected = useSelector((state: RootState) => state.currency.connected);
 
 	const modalRef = useRef<HTMLDivElement>(null);
+	const [error, setError] = useState('');
 	const [query, setQuery] = useState('');
 	const [selectedCurrency, setSelectedCurrency] = useState<string | null>(null);
 	const [quantity, setQuantity] = useState('');
@@ -36,6 +37,7 @@ const Modal: React.FC = () => {
 				setQuery('');
 				setQuantity('');
 				setPreviousPrice(null);
+				setError('');
 				dispatch(closeModal());
 			}
 		};
@@ -59,17 +61,39 @@ const Modal: React.FC = () => {
 
 	const addCurrencyCLick = (e: React.MouseEvent<HTMLButtonElement>) => {
 		e.preventDefault();
+
+		if (!quantity || isNaN(Number(quantity))) {
+			setError('Введите число');
+			return;
+		}
+
+		setError('');
+
 		if (selectedCurrency && quantity && previousPrice !== null) {
 			dispatch(
 				addCurrency({
 					currency: selectedCurrency,
 					quantity: parseFloat(quantity),
 					openPrice: previousPrice!,
-					currentPrice: rates[selectedCurrency].current || 0,
+					currentPrice: rates[selectedCurrency]?.current || 0,
 				})
 			);
 			dispatch(updateSharePercentage());
+			setQuery('');
+			setQuantity('');
+			setPreviousPrice(null);
+			setError('');
+			dispatch(closeModal());
 		}
+	};
+
+	const cancelClick = () => {
+		setSelectedCurrency(null);
+		setQuery('');
+		setQuantity('');
+		setPreviousPrice(null);
+		setError('');
+		dispatch(closeModal());
 	};
 
 	if (!isOpen) return null;
@@ -90,21 +114,32 @@ const Modal: React.FC = () => {
 				</div>
 				<div className={styles.currencyListItemWrapper}>
 					{filtered.length > 0 ? (
-						filtered.map(([currency, value]) => (
-							<div
-								onClick={() => setSelectedCurrency(currency)}
-								key={currency}
-								className={styles.currencyListItem}
-							>
-								<strong>{currency}:</strong>{' '}
-								<span>
-									{selectedCurrency && rates[selectedCurrency]
-										? rates[selectedCurrency].current.toFixed(5)
-										: '—'}
-								</span>
-								<span>+0.16%</span>
-							</div>
-						))
+						filtered
+							.filter(
+								([_, value]) =>
+									typeof value.current === 'number' &&
+									typeof value.open === 'number'
+							)
+							.map(([currency, value]) => {
+								const current = value.current;
+								const open = value.open;
+								const change = open !== 0 ? ((current - open) / open) * 100 : 0;
+								return (
+									<div
+										onClick={() => setSelectedCurrency(currency)}
+										key={currency}
+										className={styles.currencyListItem}
+									>
+										<strong>{currency}:</strong>{' '}
+										<span>
+											{rates[currency]?.current
+												? rates[currency].current.toFixed(5)
+												: 'N/A'}
+										</span>
+										<span>{change.toFixed(2)}%</span>
+									</div>
+								);
+							})
 					) : (
 						<div className={styles.noCurrencyFound}>Ничего не найдено</div>
 					)}
@@ -123,12 +158,10 @@ const Modal: React.FC = () => {
 								required
 								type='number'
 							/>
+							{error && <p className={styles.errorMessage}>{error}</p>}
 							<div className={styles.currencyBtn}>
 								<Button title='Добавить' onClick={addCurrencyCLick} />
-								<Button
-									title='Отмена'
-									onClick={() => setSelectedCurrency(null)}
-								/>
+								<Button title='Отмена' onClick={cancelClick} />
 							</div>
 						</form>
 					</div>
