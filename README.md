@@ -1,54 +1,90 @@
-# React + TypeScript + Vite
+# PortfolioOverview
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**PortfolioOverview** — это приложение для управления криптовалютным портфелем с возможностью реального обновления цен активов в реальном времени с использованием WebSocket. Оно предоставляет возможность добавлять, удалять и отслеживать активы, а также отображать подробную информацию о текущих и исторических изменениях цен.
 
-Currently, two official plugins are available:
+## Демо
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Приложение доступно по следующей ссылке:
+[Демо проекта](https://nifontovsv.github.io/matrixapp/)
 
-## Expanding the ESLint configuration
+## Технологии
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- **React**: библиотека для построения пользовательских интерфейсов.
+- **TypeScript**: для строгой типизации и улучшения качества кода.
+- **Redux Toolkit**: для управления состоянием приложения.
+- **WebSocket**: для получения данных о ценах активов в реальном времени.
+- **SCSS**: для стилизации приложения с использованием SASS.
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+## Установка
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Для начала работы с проектом выполните следующие шаги:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+1. Клонируйте репозиторий:
+   ```bash
+   git clone https://github.com/your-username/portfolio-overview.git
+   ```
+2. Установите зависимости:
+   ```bash
+   npm install
+   ```
+3. Клонируйте репозиторий:
+   ```bash
+   git clone https://github.com/your-username/portfolio-overview.git
+   ```
+4. Запустите приложение:
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+```bash
+npm start
+
+## Архитектура
+
+### Структура папок
+
+- `src/` — основной каталог с исходным кодом.
+- `components/` — компоненты для отображения элементов интерфейса.
+- `redux/` — папка с конфигурацией Redux (слайсы, хранилище, API и WebSocket).
+
+### Основные компоненты
+
+1. **Main**: отображает список активов с полями:
+- Название
+- Количество
+- Текущая цена
+- Общая стоимость
+- Изменение за 24 часа
+- Доля в портфеле
+
+2. **Modal**: модальное окно для добавления активов.
+	- **CurrencyForm**: форма для добавления активов в портфель, с возможностью ввода количества и выбора активов.
+	- **CurrencyItem**: информация об активах
+	- **CurrencyList**: список активов
+
+3. **Header**: шапка приложения
+
+### Redux Toolkit
+
+Состояние приложения управляется через Redux Toolkit. Хранилище содержит данные о добавленных активах, их текущих ценах и другую информацию. Используется WebSocket для получения обновлений цен активов в реальном времени.
+
+### WebSocket
+
+Для обновления цен активов используется подключение к WebSocket серверу Binance API: `wss://stream.binance.com:9443/stream?streams`. Обновления приходят в реальном времени и обновляют состояние портфеля.
+
+### Локальное хранилище
+
+Данные о добавленных активах сохраняются в локальном хранилище браузера, чтобы при перезагрузке страницы состояние не терялось.
+
+## Функциональные требования
+
+1. **Список активов**:
+- Отображение всех добавленных активов с полями: название, количество, текущая цена, общая стоимость, изменение за 24 часа, доля в портфеле.
+
+2. **Форма добавления активов**:
+- Возможность выбрать актив, указать количество и добавить его в портфель.
+
+3. **Удаление активов**:
+- Клик по активу удаляет его из списка.
+
+4. **Real-time обновления**:
+- Цены активов обновляются через WebSocket в реальном времени.
+
 ```
