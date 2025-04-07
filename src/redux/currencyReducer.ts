@@ -37,8 +37,8 @@ const loadFromLocalStorage = (): CurrencyState => {
 	return {
 		connected: false,
 		isOpen: false,
-		currencyList: [],
 		rates: {},
+		currencyList: [],
 	};
 };
 

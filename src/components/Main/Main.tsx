@@ -14,16 +14,16 @@ const Main: React.FC = () => {
 		(state: RootState) => state.currency.currencyList
 	);
 
-	const handleRemoveCurrency = (index: number) => {
-		dispatch(removeCurrency(index));
-	};
-
 	useEffect(() => {
 		Object.keys(rates).forEach((currency) => {
 			const { current } = rates[currency];
 			dispatch(updateCurrencyChangePrice({ currency, currentPrice: current }));
 		});
 	}, [rates, dispatch]);
+
+	const handleRemoveCurrency = (index: number) => {
+		dispatch(removeCurrency(index));
+	};
 
 	const headerTableInfo = [
 		'Название',
@@ -33,6 +33,15 @@ const Main: React.FC = () => {
 		'Изм. 24ч (%)',
 		'Доля в портфеле (%)',
 	];
+
+	if (currencyList.length === 0) {
+		return (
+			<div className={styles.empty}>
+				<h2>Пока что здесь пусто! Добавьте что-нибудь...</h2>
+			</div>
+		);
+	}
+
 	return (
 		<main className={styles.main}>
 			<div className={styles.mainHeader}>
