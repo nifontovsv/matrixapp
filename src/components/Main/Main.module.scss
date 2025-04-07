@@ -32,6 +32,18 @@
 				background: #505050;
 				border-radius: 8px;
 			}
+
+			.positive {
+				color: green;
+			}
+
+			.negative {
+				color: red;
+			}
+
+			.neutral {
+				color: gray; // для нейтральных значений
+			}
 		}
 	}
 }

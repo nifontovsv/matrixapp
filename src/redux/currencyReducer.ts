@@ -113,6 +113,40 @@ const currencySlice = createSlice({
 		removeCurrency: (state, action: PayloadAction<number>) => {
 			state.currencyList.splice(action.payload, 1);
 		},
+		updateCurrencyChangePrice: (
+			state,
+			action: PayloadAction<{ currency: string; currentPrice: number }>
+		) => {
+			const { currency, currentPrice } = action.payload;
+
+			// Обновляем информацию о валюте в currencyList
+			const currencyItem = state.currencyList.find(
+				(item) => item.currency === currency
+			);
+
+			if (currencyItem) {
+				const { openPrice } = currencyItem;
+
+				// Пересчитываем процент изменения
+				currencyItem.changePrice = openPrice
+					? ((currentPrice - openPrice) / openPrice) * 100
+					: 0;
+
+				// Пересчитываем общую стоимость
+				currencyItem.totalQuantity = currencyItem.quantity * currentPrice;
+
+				// Пересчитываем долю в портфеле
+				const totalPortfolioValue = state.currencyList.reduce(
+					(sum, item) => sum + item.totalQuantity,
+					0
+				);
+
+				state.currencyList.forEach((item) => {
+					item.sharePercentage =
+						(item.totalQuantity / totalPortfolioValue) * 100;
+				});
+			}
+		},
 	},
 });
 
@@ -124,5 +158,6 @@ export const {
 	addCurrency,
 	updateSharePercentage,
 	removeCurrency,
+	updateCurrencyChangePrice,
 } = currencySlice.actions;
 export default currencySlice.reducer;

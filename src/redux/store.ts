@@ -1,5 +1,9 @@
 import { Middleware, configureStore } from '@reduxjs/toolkit';
-import currencyReducer, { setConnected, setRates } from './currencyReducer';
+import currencyReducer, {
+	setConnected,
+	setRates,
+	updateCurrencyChangePrice,
+} from './currencyReducer';
 
 const localStorageMiddleware: Middleware = (store) => (next) => (action) => {
 	const result = next(action);
@@ -64,18 +68,30 @@ const wsMiddleware: Middleware = (storeAPI) => (next) => (action) => {
 		socket.onmessage = (event) => {
 			const message = JSON.parse(event.data);
 			console.log('WebSocket message:', message);
+
 			if (message.data?.s && message.data?.c && message.data?.o) {
 				const currency = message.data.s;
 				const price = parseFloat(message.data.c);
 				const openPrice = parseFloat(message.data.o);
+				const changePrice = ((price - openPrice) / openPrice) * 100;
 
+				// Сначала обновляем rates
 				storeAPI.dispatch(
 					setRates({
 						...storeAPI.getState().currency.rates,
 						[currency]: {
 							current: price,
 							open: openPrice,
+							changePrice,
 						},
+					})
+				);
+
+				// Затем обновляем изменение цены для этой валюты
+				storeAPI.dispatch(
+					updateCurrencyChangePrice({
+						currency, // передаем название валюты
+						currentPrice: price, // передаем текущую цену
 					})
 				);
 			}

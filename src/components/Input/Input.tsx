@@ -19,7 +19,7 @@ const Input: React.FC<InputProps> = ({
 		<label>
 			<input
 				className={styles.inputCurrencySearch}
-				type='text'
+				type={type}
 				placeholder={placeholder}
 				value={value}
 				onChange={onChange}
