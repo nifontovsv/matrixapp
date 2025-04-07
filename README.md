@@ -21,18 +21,13 @@
 
 1. Клонируйте репозиторий:
    ```bash
-   git clone https://github.com/your-username/portfolio-overview.git
+   https://github.com/nifontovsv/matrixapp.git
    ```
 2. Установите зависимости:
    ```bash
    npm install
    ```
-3. Клонируйте репозиторий:
-   ```bash
-   git clone https://github.com/your-username/portfolio-overview.git
-   ```
-4. Запустите приложение:
-
+3. Запустите приложение:
 ```bash
 npm start
 
