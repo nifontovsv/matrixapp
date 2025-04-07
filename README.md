@@ -28,8 +28,9 @@
    npm install
    ```
 3. Запустите приложение:
-```bash
-npm start
+	```bash
+	npm start
+ 	 ```
 
 ## Архитектура
 
